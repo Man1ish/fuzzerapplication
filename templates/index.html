@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My FastAPI App</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet"/>
+
+</head>
+<body>
+<div class="container">
+
+    <div class="row">
+        <h2>Benchmark</h2>
+        <form id="form">
+            <div class="col-xs-4">
+                <div class="form-group">
+                    <label for="latitude">Latitude</label>
+                    <input type="number" step="any" class="form-control" id="latitude">
+                </div>
+                <div class="form-group">
+                    <label for="longitude">Longitude</label>
+                    <input type="number" step="any" class="form-control" id="longitude">
+                </div>
+
+                <div class="form-group">
+                    <label for="magnitude">Magnitude</label>
+                    <select name="magnitude" id="magnitude" class="form-control">
+                        {% for l in eq %}
+                        <option value="{{l}}">{{l}}</option>
+                        {% endfor %}
+
+
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <div id="sensor-loc-map" class="embed-responsive"
+                         style="width:360px; height:400px; display:inline-block"></div>
+
+                </div>
+
+
+                <button type="button" class="btn btn-primary" id="search">Search</button>
+
+            </div>
+        </form>
+        <div class="col-xs-6">
+            <table border="0" id="showResult">
+
+                <!--                <tr>-->
+                <!--                    <th>Description</th>-->
+                <!--                    <td><span id="description"></span></td>-->
+                <!--                </tr>-->
+
+                <tr>
+                    <th>Latitude</th>
+                    <td><span id="latitude_val"></span></td>
+                </tr>
+
+
+                <tr>
+                    <th>Longitude</th>
+                    <td><span id="longitude_val"></span></td>
+                </tr>
+                <tr>
+                    <th>Time to access data in second</th>
+                    <td><span id="time_taken"></span></td>
+                </tr>
+                <tr>
+                    <th></th>
+                </tr>
+                <tr>
+                    <td colspan="2">
+
+
+                        <img src="" alt="" width="500" height="500" id="map_image"/>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script src="static/js/jquery.min.js"></script>
+
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/d3/5.16.0/d3.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3-array.v2.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3-geo-projection.v2.min.js"></script>
+<script type="text/javascript" src="https://d3js.org/d3-geo.v1.min.js"></script>
+<script>
+
+    // A $( document ).ready() block.
+    $(document).ready(function () {
+        $("#search").click(function () {
+            // get current time in milliseconds
+            var currentdate = new Date();
+            data = {
+                "latitude": parseFloat($('#latitude').val()),
+                "longitude": parseFloat($('#longitude').val()),
+                "magnitude": parseFloat($('#magnitude').val()),
+
+            }
+
+
+            //Send the data using get method with data in json format in body using ajax
+            $.ajax({
+                url: "http://155.230.118.45:9082/precompute/search",
+                type: "POST",
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                dataType: "json",
+                success: function (data) {
+                    $("#id").text(data.id);
+                    $("#description").text(data.description);
+                    $("#latitude_val").text(data.latitude);
+                    $("#longitude_val").text(data.longitude);
+                    $('#map_image').attr('src', data.image);
+                    // get now time in milliseconds and calculate the difference in second
+                    var now = new Date();
+                    var diff = now - currentdate;
+                    // convert the diff into second
+                    diff = diff / 1000;
+                    $("#time_taken").text(diff + " seconds");
+                },
+                failure: function (errMsg) {
+                    alert(errMsg);
+                }
+            });
+        });
+    });
+</script>
+
+<script type="text/javascript"
+        src="https://openapi.map.naver.com/openapi/v3/maps.js?ncpClientId=r4tdt0pp9a&callback=initMap"></script>
+<script src="static/js/viz_chart.js"></script>
+<script type="text/javascript" src="static/js/markerclusterer_naver.js"></script>
+
+
+<script type="text/javascript">
+    var map;
+
+    function initMap() {
+        map = new naver.maps.Map(d3.select("#sensor-loc-map").node(), {
+            center: new naver.maps.LatLng(36.675854, 127.916623),
+            zoom: 6
+        });
+
+        var marker = new naver.maps.Marker({
+            position: new naver.maps.LatLng(36.675854, 127.916623),
+            map: map
+        });
+
+        // Add onclick event on the map, remove old marker and add new marker
+        naver.maps.Event.addListener(map, 'click', function (e) {
+            marker.setMap(null);
+            marker = new naver.maps.Marker({
+                position: new naver.maps.LatLng(e.coord.y, e.coord.x),
+                map: map
+            });
+            // Set latitude and longitude to the input box
+            $('#latitude').val(e.coord.y);
+            $('#longitude').val(e.coord.x);
+        });
+
+        // var bounds = new naver.maps.LatLngBounds(
+        //     new naver.maps.LatLng(37.484494, 126.878924),
+        //     new naver.maps.LatLng(37.553858, 127.050789)
+        // );
+
+        // Create a rectangle on the map
+        var rectangle = new naver.maps.Rectangle({
+            map: map,
+            bounds: bounds,
+            strokeColor: "#ff0000",
+            strokeOpacity: 0.8,
+            strokeWeight: 2,
+            fillColor: "#ff0000",
+            fillOpacity: 0.2,
+        });
+
+        // base layout
+        base_layout()
+
+
+    }
+
+
+</script>
+
+</body>
+</html>

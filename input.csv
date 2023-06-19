@@ -1,0 +1,3 @@
+category,code
+invoke,"wsk action invoke md5 --result --param text hello"
+

@@ -1,0 +1,15 @@
+coverage
+pytest==6.2.3
+python-dotenv==0.17.0
+requests==2.25.1
+SQLAlchemy==1.4.11
+urllib3==1.26.5
+uvicorn==0.13.4
+fastapi==0.63.0
+python-decouple==3.4
+psycopg2==2.8.6
+pandas==1.1.4
+numpy==1.19.4
+GeoAlchemy2==0.12.5
+Jinja2==3.0.3
+aiofiles==22.1.0
