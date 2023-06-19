@@ -39,6 +39,16 @@ class InvokeInput(InputReader):
         print(my_string)
         return my_array
 
+    def write_output_message(self,count,error,memory,name,memory_assign,language):
+        print("="* 80)
+        if memory_assign > 0:
+            print("Code reached: "+str(count) + ", Error count: "+str(error)+", Memory used: "+str(memory)+", Docker name: "+str(name.replace(".txt", ""))
+                  +" Memory assign: "+str(memory_assign)+", Language: "+str(language.replace("md5.", "")))
+        else:
+            print("Code reached: "+str(count) + ", Error count: "+str(error)+", Memory used: "+str(memory)
+                  +", Docker name: "+str(name.replace(".txt", ""))+", Language: "+str(language.replace("md5.", "")))
+
+
     def process(self):
         pass
 
@@ -63,6 +73,14 @@ class InvokeInput(InputReader):
             return True
         else:
             return False
+
+    def get_updated_memory(self):
+        return random.randint(128, 256)
+
+    def get_create_file_name(self):
+        my_list = ["md5.py", "md5.js"]
+        # random_element = random.choice(my_list)
+        return random.choice(my_list)
 
     def generate_random_string_with_success(self, length):
         # Generate a random string with success based on a specific strategy
