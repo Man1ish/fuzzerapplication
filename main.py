@@ -7,8 +7,8 @@ import os
 import sqlalchemy as db
 from sqlalchemy import create_engine
 
-engine = create_engine(f'sqlite:////home/manish/Documents/projects/serverless/fuzzerapp/loganalysis.db',connect_args={'check_same_thread': False})
-
+engine = create_engine(f'sqlite:////home/manish/Documents/projects/serverless/fuzzerapp/loganalysis.db',
+                       connect_args={'check_same_thread': False})
 
 
 def list_the_latest_transaction_id():
@@ -25,21 +25,26 @@ def count_number_of_rows(transaction_id):
     for row in result:
         return row['COUNT(*)']
 
+
 def count_number_of_rows_with_error(transaction_id):
     # execute a raw SQL query
-    result = engine.execute("SELECT COUNT(*) FROM log WHERE transaction_id = '" + transaction_id + "' AND loglevel = 'ERROR'")
+    result = engine.execute(
+        "SELECT COUNT(*) FROM log WHERE transaction_id = '" + transaction_id + "' AND loglevel = 'ERROR'")
 
     for row in result:
         return row['COUNT(*)']
 
 
 from inputbuilder import InputFactory
+
+
 def list_files(directory):
     files = []
     for root, _, filenames in os.walk(directory):
         for filename in filenames:
             files.append(os.path.join(root, filename))
     return files
+
 
 def execute_command_with_retry(command):
     max_retries = 3
@@ -83,7 +88,7 @@ def fuzzing_loop():
 
             for line in fc:
                 # Process each line (e.g., print it)
-                fc = factory.create_input(file_name_only, line.strip(),False)
+                fc = factory.create_input(file_name_only, line.strip(), False)
                 cmd = fc.command()
 
                 result = execute_command_with_retry(cmd)
@@ -95,11 +100,12 @@ def fuzzing_loop():
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
                     print("Mutation required")
                 else:
-                    fc.save_detected_error(transaction_id)
+                    transaction_id_save = transaction_id+","+str(count)+","+str(error)
+                    fc.save_detected_error(transaction_id_save)
 
             while time.time() - start_time < duration:
 
-                fc = factory.create_input(file_name_only, "generate",True)
+                fc = factory.create_input(file_name_only, "generate", True)
                 cmd = fc.command()
                 result = execute_command_with_retry(cmd)
                 compile_result = fc.compile_result(result)
@@ -109,16 +115,13 @@ def fuzzing_loop():
                 error = count_number_of_rows_with_error(transaction_id)
 
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
-                    fc.save_success_input()
+                    fc.save_success_input(count,error)
                     print("Mutation required")
                 else:
-                    fc.save_detected_error(transaction_id)
+                    transaction_id_save = transaction_id + "," + str(count) + "," + str(error)
+                    fc.save_detected_error(transaction_id_save)
 
-
-
-
-
-
+                time.sleep(1)
 
 
 if __name__ == "__main__":
