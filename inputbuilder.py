@@ -13,15 +13,26 @@ class InputReader:
 
 class InvokeInput(InputReader):
 
-    def __init__(self, given_input, generate=False):
+    def __init__(self, given_input, generate=False,execution_time_function=0,memory_used=0):
         self.given_input = given_input
         self.success_file = "output/invoke.txt"
         self.error_file = "output/error.txt"
+        self.execution_time_file = "output/execution.txt"
+        self.metrics_file = "output/metrices.txt"
         if generate:
             self.method_name = "md5"
-            self.input = self.generate_random_string_with_success(30)
+            self.input = self.generate_mutated_string(30,execution_time_function,memory_used)
         else:
             self.method_name, self.input = self.extract_input()
+
+    def save_execution_time(self, execution_time):
+        with open(self.execution_time_file, "a") as myfile:
+            myfile.write(str(execution_time) + "\n")
+
+
+    def save_metrics(self,docker_name, language, memory_used,execution_time_function, error, count):
+        with open(self.metrics_file, "a") as myfile:
+            myfile.write(str(docker_name)+","+str(language)+","+str(memory_used)+","+str(execution_time_function)+","+str(error)+","+ str(count)+ "\n")
 
     def minimum_no_of_error(self):
         return 0
@@ -82,7 +93,7 @@ class InvokeInput(InputReader):
         # random_element = random.choice(my_list)
         return random.choice(my_list)
 
-    def generate_random_string_with_success(self, length):
+    def generate_mutated_string(self, length,execution_time,memory):
         # Generate a random string with success based on a specific strategy
 
 

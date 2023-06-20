@@ -95,7 +95,7 @@ def execute_command_with_retry(command):
 
 def fuzzing_loop():
     start_time = time.time()
-    duration = 1000  # 5 seconds
+    duration = 1000
 
     # Example usage
     directory = "input"  # Replace with the directory path you want to list files from
@@ -115,8 +115,9 @@ def fuzzing_loop():
 
             for line in fc:
                 memory = 256
+                init_time = time.time()
                 # Process each line (e.g., print it)
-                fc = factory.create_input(file_name_only, line.strip(), False)
+                fc = factory.create_input(file_name_only, line.strip(), False,0,0)
                 cmd = fc.command()
 
                 result = execute_command_with_retry(cmd)
@@ -128,19 +129,22 @@ def fuzzing_loop():
                 #container_id = extract_container_from_transaction_id(transaction_id)
                 memory_used,docker_name = get_container_memory()
 
-
+                language = str(create_file_name.replace("md5.", ""))
                 # memory_used,docker_name = get_memory_detail(fc.method_name)
                 fc.write_output_message(count, error, memory_used,docker_name,memory,create_file_name)
+                execution_time_function = time.time() - init_time
+                fc.save_execution_time(execution_time_function)
 
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
                     print("Mutation required")
                 else:
                     transaction_id_save = transaction_id+","+str(count)+","+str(error)
                     fc.save_detected_error(transaction_id_save)
-
+                fc.save_metrics(docker_name,language,memory_used,execution_time_function,error, count)
 
             while time.time() - start_time < duration:
-                fc = factory.create_input(file_name_only, "generate", True)
+                function_start_time = time.time()
+                fc = factory.create_input(file_name_only, "generate", True,execution_time_function,memory_used)
                 memory = fc.get_updated_memory()
                 create_file_name = fc.get_create_file_name()
                 refresh_function(memory,create_file_name)
@@ -153,21 +157,21 @@ def fuzzing_loop():
                 transaction_id = list_the_latest_transaction_id()
                 count = count_number_of_rows(transaction_id)
                 error = count_number_of_rows_with_error(transaction_id)
+                language = str(create_file_name.replace("md5.", ""))
                 #memory_used,docker_name = get_memory_detail(fc.method_name)
                 #memory_used, docker_name = get_container_memory(container_id)
                 memory_used, docker_name = get_container_memory()
                 fc.write_output_message(count, error, memory_used,docker_name,memory,create_file_name)
-
-
-                #
-
+                function_end_time = time.time()
+                execution_time_function = function_end_time - function_start_time
+                fc.save_execution_time(execution_time_function)
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
                     fc.save_success_input(count,error)
-
                 else:
                     transaction_id_save = transaction_id + "," + str(count) + "," + str(error)
                     fc.save_detected_error(transaction_id_save)
 
+                fc.save_metrics(docker_name,language,memory_used,execution_time_function,error, count)
                 time.sleep(2)
 
 
