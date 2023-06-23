@@ -155,7 +155,7 @@ class CreateInput(InputReader):
         return array[0], array[1]
 
     def command(self):
-        my_array = ["wsk", "action", "create", self.method_name, self.file_name]
+        my_array = ["wsk", "action", "create", self.method_name, self.file_name, "--docker","pandeymanish93/python3action:serverless-cache"]
         my_string = ' '.join(my_array)
         print(my_string)
         return my_array

@@ -44,9 +44,33 @@ source venv/bin/activate
 python api_server.py
 
 
-
 ```
+
+## Input to fuzzer
+1. Code: Python and Javascript
+2. Create action command
+    1. wsk action update md5 --docker pandeymanish93/python3action:serverless-cache read-input.py --memory 192 
+    2. wsk action invoke md5 --param input helloworld
+
+We can modify the values like md5, docker value, memory and input
     
+## Collection of Coverage
+In order to indentify the coverage of the function, we inserted following code in the function 
+```bash
+logging.info(this, s"container creation message for ${creation.invocationNamespace}/${creation.action} is received")
+logging.error(this, "Error while creating the container")
+```
+The log message is send to the fuzzer application, where the information are saved in log table.
+
+## Fuzzer Techniques
+1. Mutation fuzzing: input parameter 
+2. Random fuzzing: memory and code Code: Python and Javascript
+
+## Fuzzer Guided
+1. Fuzzer is guided through number of code coverage
+
+## Result
+1. Code coverage, number of error, memory utilize, present in output/metrices.txt file
 ## Run project
 
 To run the fuzzer in other terminal

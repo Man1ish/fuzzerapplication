@@ -97,6 +97,7 @@ def execute_command_with_retry(command):
 def fuzzing_loop():
     start_time = time.time()
     duration = 1000
+    initial_code_coverage = 0
 
     # Example usage
     directory = "input"  # Replace with the directory path you want to list files from
@@ -138,7 +139,7 @@ def fuzzing_loop():
                 fc.write_output_message(count, error, memory_used,docker_name,memory,create_file_name)
                 execution_time_function = time.time() - init_time
                 fc.save_execution_time(execution_time_function)
-
+                initial_code_coverage = last_code_coverage
 
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
                     print("Mutation required")
@@ -146,6 +147,8 @@ def fuzzing_loop():
                     transaction_id_save = transaction_id+","+str(count)+","+str(error)
                     fc.save_detected_error(transaction_id_save)
                 fc.save_metrics(docker_name,language,memory_used,execution_time_function,error, count)
+
+
 
             while time.time() - start_time < duration:
                 function_start_time = time.time()
@@ -173,13 +176,16 @@ def fuzzing_loop():
                 function_end_time = time.time()
                 execution_time_function = function_end_time - function_start_time
                 fc.save_execution_time(execution_time_function)
-                if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
+
+
+                if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error() and initial_code_coverage > count:
                     fc.save_success_input(count,error)
+                    fc.save_metrics(docker_name, language, memory_used, execution_time_function, error, count)
                 else:
                     transaction_id_save = transaction_id + "," + str(count) + "," + str(error)
                     fc.save_detected_error(transaction_id_save)
 
-                fc.save_metrics(docker_name,language,memory_used,execution_time_function,error, count)
+
                 #time.sleep(2)
 
 
