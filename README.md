@@ -30,17 +30,21 @@ git clone https://github.com/Man1ish/fuzzerapplication.git
 python3 -m venv venv
 venv/bin/python -m pip install --upgrade pip
 venv/bin/python -m pip install -r requirements.txt
+source venv/bin/activate
 
-#run the api server
+#run the api server in one terminal
 python api_server.py
+
+
 
 ```
     
 ## Run project
 
-To run the fuzzer
+To run the fuzzer in other terminal
 
 ```bash
-  python main.py
+source venv/bin/activate
+python main.py
 ```
 

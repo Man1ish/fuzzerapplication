@@ -1,7 +1,7 @@
 import json
 import string
 import random
-
+import pandas as pd
 
 class InputReader:
     def command(self):
@@ -13,12 +13,14 @@ class InputReader:
 
 class InvokeInput(InputReader):
 
-    def __init__(self, given_input, generate=False,execution_time_function=0,memory_used=0):
+    def __init__(self, given_input, generate=False,execution_time_function=0,memory_used=0,last_code_coverage =0):
         self.given_input = given_input
         self.success_file = "output/invoke.txt"
         self.error_file = "output/error.txt"
         self.execution_time_file = "output/execution.txt"
         self.metrics_file = "output/metrices.txt"
+        self.last_code_coverage = last_code_coverage
+        self.best_code_coverage = 0
         if generate:
             self.method_name = "md5"
             self.input = self.generate_mutated_string(30,execution_time_function,memory_used)
@@ -113,8 +115,10 @@ class InvokeInput(InputReader):
         mutated_string = mutated_string[:mutation_index] + mutation_char + mutated_string[mutation_index + 1:]
         mutated_string = "#_)"+mutated_string
 
-        # if self.read_check_already_string(mutated_string):
-        #     return self.generate_random_string(length)
+
+
+        if self.read_check_already_string(mutated_string):
+            mutated_string = self.generate_random_string(length)
 
 
         return mutated_string

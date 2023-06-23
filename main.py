@@ -24,10 +24,11 @@ def list_the_latest_transaction_id():
 
 def count_number_of_rows(transaction_id):
     # execute a raw SQL query
-    result = engine.execute("SELECT COUNT(*) FROM log WHERE transaction_id = '" + transaction_id + "'")
+
+    result = engine.execute("SELECT COUNT(*) as count FROM log WHERE transaction_id = '" + transaction_id + "'")
 
     for row in result:
-        return row['COUNT(*)']
+        return row['count']
 
 
 def refresh_function(memory,create_file_name):
@@ -112,18 +113,21 @@ def fuzzing_loop():
             file_name_only = os.path.splitext(file_name)[0]
             create_file_name = 'md5.py'
             refresh_function(0,create_file_name)
+            last_code_coverage = 0
 
             for line in fc:
                 memory = 256
                 init_time = time.time()
                 # Process each line (e.g., print it)
-                fc = factory.create_input(file_name_only, line.strip(), False,0,0)
+                fc = factory.create_input(file_name_only, line.strip(), False,0,0,last_code_coverage)
                 cmd = fc.command()
 
                 result = execute_command_with_retry(cmd)
-
+                time.sleep(1)
                 transaction_id = list_the_latest_transaction_id()
                 count = count_number_of_rows(transaction_id)
+                last_code_coverage = count
+                #print(count)
                 error = count_number_of_rows_with_error(transaction_id)
 
                 #container_id = extract_container_from_transaction_id(transaction_id)
@@ -135,6 +139,7 @@ def fuzzing_loop():
                 execution_time_function = time.time() - init_time
                 fc.save_execution_time(execution_time_function)
 
+
                 if count > fc.minimum_no_of_logs() and error <= fc.minimum_no_of_error():
                     print("Mutation required")
                 else:
@@ -144,7 +149,7 @@ def fuzzing_loop():
 
             while time.time() - start_time < duration:
                 function_start_time = time.time()
-                fc = factory.create_input(file_name_only, "generate", True,execution_time_function,memory_used)
+                fc = factory.create_input(file_name_only, "generate", True,execution_time_function,memory_used, last_code_coverage)
                 memory = fc.get_updated_memory()
                 create_file_name = fc.get_create_file_name()
                 refresh_function(memory,create_file_name)
@@ -154,8 +159,11 @@ def fuzzing_loop():
                 result = execute_command_with_retry(cmd)
                 compile_result = fc.compile_result(result)
 
+                time.sleep(1)
+
                 transaction_id = list_the_latest_transaction_id()
                 count = count_number_of_rows(transaction_id)
+                last_code_coverage = count
                 error = count_number_of_rows_with_error(transaction_id)
                 language = str(create_file_name.replace("md5.", ""))
                 #memory_used,docker_name = get_memory_detail(fc.method_name)
@@ -172,7 +180,7 @@ def fuzzing_loop():
                     fc.save_detected_error(transaction_id_save)
 
                 fc.save_metrics(docker_name,language,memory_used,execution_time_function,error, count)
-                time.sleep(2)
+                #time.sleep(2)
 
 
 
