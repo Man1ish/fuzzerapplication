@@ -71,6 +71,7 @@ The log message is send to the fuzzer application, where the information are sav
 
 ## Result
 1. Code coverage, number of error, memory utilize, present in output/metrices.txt file
+![img_4.png](img_4.png)
 ## Run project
 
 To run the fuzzer in other terminal
