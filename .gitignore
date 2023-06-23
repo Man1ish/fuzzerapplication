@@ -1,5 +1,3 @@
 .idea
 loganalysis.db
-output/
-output/
-output/
+output/execution.txt
